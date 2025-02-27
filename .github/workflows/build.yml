@@ -28,4 +28,45 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with: 
           files: totp-cli-x86_64-linux.tar.gz
+
+  build_windows:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: mlugg/setup-zig@v1
+        with:
+          version: master
+      - name: Zig build
+        run: zig build -Dtarget=x86_64-windows -Doptimize=ReleaseSmall --summary all --prefix-exe-dir ./../
+      - name: Get Tar
+        run: tar -czvf totp-cli-x86_64-windows.tar.gz totp-cli LICENSE conf.json README.md
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with: 
+          files: totp-cli-x86_64-windows.tar.gz
+
+
+  build_macos:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: mlugg/setup-zig@v1
+        with:
+          version: master
+      - name: Zig build
+        run: zig build -Dtarget=x86_64-macos -Doptimize=ReleaseSmall --summary all --prefix-exe-dir ./../
+      - name: Get Tar
+        run: tar -czvf totp-cli-x86_64-macos.tar.gz totp-cli LICENSE conf.json README.md
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with: 
+          files: totp-cli-x86_64-macos.tar.gz
             
