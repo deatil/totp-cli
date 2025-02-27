@@ -18,9 +18,13 @@ git clone github.com/deatil/totp-cli
 ### Get Starting
 
 zig build
-
 ~~~cmd
-zig build run
+zig build install
+~~~
+
+use cli and use `conf.json`
+~~~cmd
+totp-cli
 ~~~
 
 

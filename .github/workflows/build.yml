@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  release:
+    types: [created]
+
+permissions:
+    contents: write
+    packages: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: mlugg/setup-zig@v1
+        with:
+          version: master
+      - name: Zig build
+        run: zig build --name totp-cli -target x86_64-linux
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with: 
+          files: |
+            zig-out/bin/totp-cli
+            LICENSE
+            conf.json
+            README.md
+            
