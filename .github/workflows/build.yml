@@ -21,13 +21,11 @@ jobs:
           version: master
       - name: Zig build
         run: zig build -Dtarget=x86_64-linux -Doptimize=ReleaseSmall --summary all --prefix-exe-dir ./../
+      - name: Get Tar
+        run: tar -czvf totp-cli.tar.gz totp-cli LICENSE conf.json README.md
       - name: Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with: 
-          files: |
-            totp-cli
-            LICENSE
-            conf.json
-            README.md
+          files: totp-cli.tar.gz
             
