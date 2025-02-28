@@ -24,8 +24,13 @@ zig build install
 
 use cli and use `conf.json`
 ~~~cmd
-totp-cli
+./totp-cli
 ~~~
+
+
+### Preview
+
+![totp-cli](https://github.com/user-attachments/assets/8d39b779-5c6e-47c0-81ff-f9a8b91a27f3)
 
 
 ### LICENSE
