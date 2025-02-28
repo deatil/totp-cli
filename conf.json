@@ -1,3 +1,9 @@
 {
-    "secret": "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ"
+    "totp": [
+        {
+            "name": "totp1",
+            "secret": "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+            "period": 30
+        }
+    ]
 }
