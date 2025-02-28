@@ -3,7 +3,10 @@
         {
             "name": "totp1",
             "secret": "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
-            "period": 30
+            "period": 30,
+            "digits": 6,
+            "algorithm": "SHA1",
+            "encoder": "default"
         }
     ]
 }

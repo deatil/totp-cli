@@ -12,46 +12,46 @@ const otps = totp.otps;
 const version = "1.0.1";
 
 pub fn main() !void {
-    std.debug.print("Totp Cli started, version {s}. \n\n", .{version});
+    std.debug.print("Totp Cli started. \n", .{});
+    std.debug.print("version {s}. \n\n", .{version});
 
-    const alloc = std.heap.page_allocator;
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const alloc = gpa.allocator();
 
     const file = "conf.json";
     const confs = getConf(alloc, file) catch {
         std.debug.print("conf.json not exists.\n", .{});
-
         return ;
     };
 
     if (confs.len == 0) {
-        std.debug.print("conf.json is empty.\n", .{});
-
+        std.debug.print("totp conf is empty.\n", .{});
         return ;
     }
 
     const conf = confs[0];
 
-    const period = conf.period;
-
     var passcode: []const u8 = "";
 
     var t = try time.Timer.start();
     while (true) {
+        const period = conf.period;
+        
         if (passcode.len == 0) {
-            passcode = try generateCode(alloc, conf.secret);
+            passcode = try generateCode(alloc, conf);
         }
 
         if (t.read() > time.ns_per_s) {
             const sec = @mod(getSecond(), period);
             if (sec == 0) {
-                t.reset();
-
-                passcode = try generateCode(alloc, conf.secret);
+                passcode = try generateCode(alloc, conf);
 
                 std.debug.print("[{s}] passcode: {s}, next generate: 0s \r", .{conf.name, passcode});
             } else {
                 std.debug.print("[{s}] passcode: {s}, next generate: {d}s \r", .{conf.name, passcode, period - sec});
             }
+
+            t.reset();
         }
 
     }
@@ -87,7 +87,10 @@ fn getConf(alloc: Allocator, file: []const u8) ![]Conf {
         for (totps.array.items) |item| {
             var name: []const u8 = "";
             var secret: []const u8 = "";
-            var period: i64 = 30;
+            var period: u32 = 30;
+            var digits: otps.Digits = .Six;
+            var algorithm: otps.Algorithm = .SHA1;
+            var encoder: otps.Encoder = .Default;
 
             if (item.object.get("name")) |val| {
                 if (val == .string) {
@@ -101,14 +104,44 @@ fn getConf(alloc: Allocator, file: []const u8) ![]Conf {
             }
             if (item.object.get("period")) |val| {
                 if (val == .integer) {
-                    period = val.integer;
+                    period = @as(u32, @intCast(val.integer));
+                }
+            }
+            if (item.object.get("digits")) |val| {
+                if (val == .integer) {
+                    digits = otps.Digits.init(@as(u32, @intCast(val.integer)));
+                }
+            }
+            if (item.object.get("algorithm")) |val| {
+                if (val == .string) {
+                    if (std.mem.eql(u8, val.string, "SHA1")) {
+                        algorithm = .SHA1;
+                    } else if (std.mem.eql(u8, val.string, "SHA256")) {
+                        algorithm = .SHA256;
+                    } else if (std.mem.eql(u8, val.string, "SHA512")) {
+                        algorithm = .SHA512;
+                    } else {
+                        algorithm = .MD5;
+                    }
+                }
+            }
+            if (item.object.get("encoder")) |val| {
+                if (val == .string) {
+                    if (std.mem.eql(u8, val.string, "Steam")) {
+                        encoder = .Steam;
+                    } else {
+                        encoder = .Default;
+                    }
                 }
             }
 
             try list.append(Conf{
                 .name = name,
                 .secret = secret,
-                .period = @as(u32, @intCast(period)),
+                .period = period,
+                .digits = digits,
+                .algorithm = algorithm,
+                .encoder = encoder,
             });
         }
     }
@@ -116,9 +149,16 @@ fn getConf(alloc: Allocator, file: []const u8) ![]Conf {
     return try list.toOwnedSlice();
 }
 
-fn generateCode(alloc: Allocator, secret: []const u8) ![]const u8 {
-    const n = totp.time.now().utc();
-    const passcode = try totp.generateCode(alloc, secret, n);
+fn generateCode(alloc: Allocator, conf: Conf) ![]const u8 {
+    const t = totp.time.now().utc();
+    
+    const passcode = try totp.generateCodeCustom(alloc, conf.secret, t, .{
+        .period = conf.period,
+        .skew = 1,
+        .digits = conf.digits,
+        .algorithm = conf.algorithm,
+        .encoder = conf.encoder,
+    });
 
     return passcode;
 }
