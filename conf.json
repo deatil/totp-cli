@@ -1,7 +1,7 @@
 {
     "totp": [
         {
-            "name": "totp1",
+            "name": "totp",
             "secret": "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
             "period": 30,
             "digits": 6,

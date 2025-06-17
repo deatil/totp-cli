@@ -1,10 +1,11 @@
 .{
-    .name = "totp-cli",
-    .version = "1.0.2",
+    .name = .totp_cli,
+    .version = "1.1.0",
+    .fingerprint = 0x7d7e44cdd3b61fbc,
     .dependencies = .{
         .@"zig-totp" = .{
-            .url = "git+https://github.com/deatil/zig-totp?ref=main#c22356553edfd64aa98bdee3d1875f7ab6831e4d",
-            .hash = "12200675b466487691cb0c8a704da8f6026bf87129d0435cf39435b98294891ec7d3",
+            .url = "git+https://github.com/deatil/zig-totp?ref=main#9da8eacd0629ea658e82f22c1195c3cdf72230d5",
+            .hash = "zig_totp-1.2.7-fTIsq4sYAwDMA4ZhqRffkkWPOsE7VLSXKthsyXwbWt7k",
         },
     },
     .paths = .{

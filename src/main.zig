@@ -9,7 +9,7 @@ const Allocator = std.mem.Allocator;
 const totp = @import("zig-totp");
 const otps = totp.otps;
 
-const version = "1.0.1";
+const version = "1.1.0";
 
 pub fn main() !void {
     std.debug.print("Totp Cli started. \n", .{});
@@ -21,22 +21,21 @@ pub fn main() !void {
     const file = "conf.json";
     const confs = getConf(alloc, file) catch {
         std.debug.print("conf.json not exists.\n", .{});
-        return ;
+        return;
     };
 
     if (confs.len == 0) {
         std.debug.print("totp conf is empty.\n", .{});
-        return ;
+        return;
     }
 
     const conf = confs[0];
+    const period = conf.period;
 
     var passcode: []const u8 = "";
 
     var t = try time.Timer.start();
     while (true) {
-        const period = conf.period;
-        
         if (passcode.len == 0) {
             passcode = try generateCode(alloc, conf);
         }
@@ -46,14 +45,13 @@ pub fn main() !void {
             if (sec == 0) {
                 passcode = try generateCode(alloc, conf);
 
-                std.debug.print("[{s}] passcode: {s}, next generate: 0s \r", .{conf.name, passcode});
+                std.debug.print("[{s}] passcode: {s}, next generate: 0s \r", .{ conf.name, passcode });
             } else {
-                std.debug.print("[{s}] passcode: {s}, next generate: {d}s \r", .{conf.name, passcode, period - sec});
+                std.debug.print("[{s}] passcode: {s}, next generate: {d}s \r", .{ conf.name, passcode, period - sec });
             }
 
             t.reset();
         }
-
     }
 }
 
@@ -135,7 +133,7 @@ fn getConf(alloc: Allocator, file: []const u8) ![]Conf {
                 }
             }
 
-            try list.append(Conf{
+            try list.append(.{
                 .name = name,
                 .secret = secret,
                 .period = period,
@@ -151,7 +149,7 @@ fn getConf(alloc: Allocator, file: []const u8) ![]Conf {
 
 fn generateCode(alloc: Allocator, conf: Conf) ![]const u8 {
     const t = totp.time.now().utc();
-    
+
     const passcode = try totp.generateCodeCustom(alloc, conf.secret, t, .{
         .period = conf.period,
         .skew = 1,
@@ -171,4 +169,3 @@ fn getSecond() u6 {
     const sec = es.getDaySeconds().getSecondsIntoMinute();
     return sec;
 }
-
