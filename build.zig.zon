@@ -1,16 +1,22 @@
 .{
     .name = .totp_cli,
-    .version = "1.1.0",
+    .version = "1.2.0",
     .fingerprint = 0x7d7e44cdd3b61fbc,
+    .minimum_zig_version = "0.16.0",
     .dependencies = .{
         .@"zig-totp" = .{
-            .url = "git+https://github.com/deatil/zig-totp?ref=main#9da8eacd0629ea658e82f22c1195c3cdf72230d5",
-            .hash = "zig_totp-1.2.7-fTIsq4sYAwDMA4ZhqRffkkWPOsE7VLSXKthsyXwbWt7k",
+            .url = "git+https://github.com/deatil/zig-totp?ref=main#815d0df92ece18723a364dd6d983a08ffa72212c",
+            .hash = "zig_totp-1.5.1-fTIsq0MzAwDSnqZ0H4x-BjO62U90kn8mFVIexFtv-_cD",
+        },
+        .@"zig-time" = .{
+            .url = "git+https://github.com/deatil/zig-time?ref=main#cbb02271f84e105f87ddd393e33f709a7d047146",
+            .hash = "zig_time-1.3.1-FD_-Cm62AQB3H8a4z2lPadDLlULWHQ59l3jCh0nHJmUW",
         },
     },
     .paths = .{
         "build.zig",
         "build.zig.zon",
+        "LICENSE",
         "src",
     },
 }

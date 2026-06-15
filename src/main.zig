@@ -1,25 +1,27 @@
 const std = @import("std");
-const lib = @import("totp_cli_lib");
-
-const time = std.time;
+const Io = std.Io;
 const json = std.json;
-const epoch = time.epoch;
+const epoch = std.time.epoch;
 const Allocator = std.mem.Allocator;
 
 const totp = @import("zig-totp");
+const time = @import("zig-time");
 const otps = totp.otps;
 
-const version = "1.1.0";
+const lib = @import("totp_cli_lib");
 
-pub fn main() !void {
+const version = "1.2.0";
+
+pub fn main(init: std.process.Init) !void {
+    const io = init.io;
+
     std.debug.print("Totp Cli started. \n", .{});
     std.debug.print("version {s}. \n\n", .{version});
 
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    const alloc = gpa.allocator();
+    const alloc: std.mem.Allocator = init.arena.allocator();
 
     const file = "conf.json";
-    const confs = getConf(alloc, file) catch {
+    const confs = getConf(alloc, io, file) catch {
         std.debug.print("conf.json not exists.\n", .{});
         return;
     };
@@ -30,27 +32,28 @@ pub fn main() !void {
     }
 
     const conf = confs[0];
-    const period = conf.period;
 
     var passcode: []const u8 = "";
 
-    var t = try time.Timer.start();
+    var t = try time.timer.Timer.start(io);
     while (true) {
+        const period = conf.period;
+
         if (passcode.len == 0) {
-            passcode = try generateCode(alloc, conf);
+            passcode = try generateCode(alloc, io, conf);
         }
 
-        if (t.read() > time.ns_per_s) {
-            const sec = @mod(getSecond(), period);
+        if (t.read(io) > std.time.ns_per_s) {
+            const sec = @mod(getSecond(io), period);
             if (sec == 0) {
-                passcode = try generateCode(alloc, conf);
+                passcode = try generateCode(alloc, io, conf);
 
                 std.debug.print("[{s}] passcode: {s}, next generate: 0s \r", .{ conf.name, passcode });
             } else {
                 std.debug.print("[{s}] passcode: {s}, next generate: {d}s \r", .{ conf.name, passcode, period - sec });
             }
 
-            t.reset();
+            t.reset(io);
         }
     }
 }
@@ -64,18 +67,23 @@ const Conf = struct {
     encoder: otps.Encoder = .Default,
 };
 
-fn getConf(alloc: Allocator, file: []const u8) ![]Conf {
-    var list = std.ArrayList(Conf).init(alloc);
-    defer list.deinit();
+fn getConf(alloc: Allocator, io: Io, file: []const u8) ![]Conf {
+    var list = try std.ArrayList(Conf).initCapacity(alloc, 0);
+    defer list.deinit(alloc);
 
-    var open_file = try std.fs.cwd().openFile(file, .{ .mode = .read_only });
-    defer open_file.close();
+    const cwd = std.Io.Dir.cwd();
 
-    const file_length = (try open_file.metadata()).size();
-    const content = try open_file.readToEndAlloc(alloc, file_length);
+    var open_file = try cwd.openFile(io, file, .{ .mode = .read_only });
+    defer open_file.close(io);
+
+    const stat = try open_file.stat(io);
+    const content = try alloc.alloc(u8, stat.size);
+    defer alloc.free(content);
+
+    _ = try open_file.readPositionalAll(io, content, 0);
 
     if (content.len == 0) {
-        return try list.toOwnedSlice();
+        return try list.toOwnedSlice(alloc);
     }
 
     const parsed = try json.parseFromSlice(json.Value, alloc, content, .{});
@@ -133,7 +141,7 @@ fn getConf(alloc: Allocator, file: []const u8) ![]Conf {
                 }
             }
 
-            try list.append(.{
+            try list.append(alloc, .{
                 .name = name,
                 .secret = secret,
                 .period = period,
@@ -144,11 +152,11 @@ fn getConf(alloc: Allocator, file: []const u8) ![]Conf {
         }
     }
 
-    return try list.toOwnedSlice();
+    return try list.toOwnedSlice(alloc);
 }
 
-fn generateCode(alloc: Allocator, conf: Conf) ![]const u8 {
-    const t = totp.time.now().utc();
+fn generateCode(alloc: Allocator, io: Io, conf: Conf) ![]const u8 {
+    const t = totp.time.now(io).utc();
 
     const passcode = try totp.generateCodeCustom(alloc, conf.secret, t, .{
         .period = conf.period,
@@ -161,9 +169,9 @@ fn generateCode(alloc: Allocator, conf: Conf) ![]const u8 {
     return passcode;
 }
 
-fn getSecond() u6 {
+fn getSecond(io: Io) u6 {
     const es = epoch.EpochSeconds{
-        .secs = @as(u64, @intCast(time.timestamp())),
+        .secs = @as(u64, @intCast(time.now(io).timestamp())),
     };
 
     const sec = es.getDaySeconds().getSecondsIntoMinute();
