@@ -1,16 +1,16 @@
 .{
     .name = .totp_cli,
-    .version = "1.2.0",
+    .version = "1.3.0",
     .fingerprint = 0x7d7e44cdd3b61fbc,
-    .minimum_zig_version = "0.16.0",
+    .minimum_zig_version = "0.17.0",
     .dependencies = .{
         .@"zig-totp" = .{
-            .url = "git+https://github.com/deatil/zig-totp?ref=main#815d0df92ece18723a364dd6d983a08ffa72212c",
-            .hash = "zig_totp-1.5.1-fTIsq0MzAwDSnqZ0H4x-BjO62U90kn8mFVIexFtv-_cD",
+            .url = "git+https://github.com/deatil/zig-totp?ref=main#c1e2d3ea80e50daeab0cc20c6ea5c2902347ea5a",
+            .hash = "zig_totp-1.6.1-fTIsq1szAwBrRSKm7MeHOum0Z5ktSIX7n9DGpXVV0TUP",
         },
         .@"zig-time" = .{
-            .url = "git+https://github.com/deatil/zig-time?ref=main#cbb02271f84e105f87ddd393e33f709a7d047146",
-            .hash = "zig_time-1.3.1-FD_-Cm62AQB3H8a4z2lPadDLlULWHQ59l3jCh0nHJmUW",
+            .url = "git+https://github.com/deatil/zig-time?ref=main#8bb17ec94acfafcb18c14a25bf9e4c23b9d7b411",
+            .hash = "zig_time-1.3.4-FD_-CkW4AQBOOrEqtEGuqgZypL88bmiyPGk99riOn6Gm",
         },
     },
     .paths = .{

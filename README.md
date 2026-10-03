@@ -5,7 +5,7 @@ totp-cli is generate code cli tool.
 
 ### Env
 
- - Zig >= 0.16.0
+ - Zig >= 0.17.0
 
 
 ### Download

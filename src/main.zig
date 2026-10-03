@@ -15,8 +15,7 @@ const version = "1.2.0";
 pub fn main(init: std.process.Init) !void {
     const io = init.io;
 
-    std.debug.print("Totp Cli started. \n", .{});
-    std.debug.print("version {s}. \n\n", .{version});
+    std.debug.print("Totp Cli started, version {s}. \n", .{version});
 
     const alloc: std.mem.Allocator = init.arena.allocator();
 
